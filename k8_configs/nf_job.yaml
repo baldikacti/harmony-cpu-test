@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nextflow-cputest-pipeline
+  namespace: nextflow-stresstest
+spec:
+  template:
+    spec:
+      serviceAccountName: nextflow-sa
+      containers:
+      - name: nextflow
+        image: registry.rc.umass.edu:5050/harmony/infrastructure/user-resources/nextflow
+        imagePullPolicy: Always
+        command: ["/bin/bash", "-c"]
+        args: ["nextflow run baldikacti/harmony-cpu-test --n_jobs 5 --ref data/ecoli_k12.fasta --outdir result -profile harmony"]
+        workingDir: /workspace
+        volumeMounts:
+        - name: workspace
+          mountPath: /workspace
+        env:
+        - name: NXF_WORK
+          value: /workspace/work
+        - name: NXF_HOME
+          value: /workspace/.nextflow
+        - name: NXF_K8S_POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: NXF_K8S_POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName
+        - name: NXF_K8S_STORAGE_CLAIM_NAME
+          value: stresstest-workspace-pvc
+        - name: NXF_K8S_STORAGE_MOUNT_PATH
+          value: /workspace
+      volumes:
+      - name: workspace
+        persistentVolumeClaim:
+          claimName: stresstest-workspace-pvc
+      restartPolicy: Never
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: stresstest-workspace-pv
+spec:
+  capacity:
+    storage: 240Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: vast.unity.rc.umass.edu
+    path: /harmony-home/baldikacti_umass_edu/stress-test
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: stresstest-workspace-pvc
+  namespace: nextflow-stresstest
+spec:
+  volumeName: stresstest-workspace-pv
+  storageClassName: ""
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 240Gi

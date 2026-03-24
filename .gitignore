@@ -3,4 +3,3 @@ logs/
 test/
 work/
 .nextflow*
-k8_configs/
